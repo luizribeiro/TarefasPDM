@@ -9,34 +9,42 @@ import java.io.IOException;
 import java.io.InputStream;
 import javax.microedition.io.Connector;
 import javax.microedition.io.HttpConnection;
-import javax.microedition.lcdui.Choice;
+import javax.microedition.lcdui.ChoiceGroup;
 import javax.microedition.lcdui.Command;
 import javax.microedition.lcdui.CommandListener;
 import javax.microedition.lcdui.Display;
 import javax.microedition.lcdui.Displayable;
-import javax.microedition.lcdui.List;
+import javax.microedition.lcdui.Form;
+import javax.microedition.lcdui.Item;
+import javax.microedition.lcdui.ItemCommandListener;
 import javax.microedition.midlet.*;
 
 /**
  * @author Caio
  */
-public class ConsultaLivros extends MIDlet implements CommandListener{
+public class ConsultaLivros extends MIDlet implements CommandListener, ItemCommandListener{
     private Display tela;
-    private List lista;
+    //private List lista;
+    private ChoiceGroup lista;
     private Command sair, listar;
+    private Form form;
 
     public ConsultaLivros(){
         tela = Display.getDisplay(this);
         sair = new Command("Sair", Command.EXIT, 0);
         listar = new Command("Listar", Command.OK, 0);
 
-        lista = new List("Livros", Choice.IMPLICIT);
-        lista.setCommandListener(this);
-        lista.addCommand(sair);
-        lista.addCommand(listar);
+        lista = new ChoiceGroup("Livros", ChoiceGroup.EXCLUSIVE);
+
+        form = new Form("Livraria");
+        form.setCommandListener(this);
+        form.addCommand(sair);
+        form.addCommand(listar);
+
+        form.append(lista);
     }
     public void startApp() {
-        tela.setCurrent(lista);
+        tela.setCurrent(form);
     }
 
     public void pauseApp() {
@@ -75,7 +83,20 @@ public class ConsultaLivros extends MIDlet implements CommandListener{
                     x.printStackTrace();
                 }
             }
-            System.out.println(sb.toString());
+            lista.deleteAll();
+            String entrada;
+            String listaCompleta = sb.toString();
+            int index0 = 0, index1 = listaCompleta.indexOf("\n");
+            while(index1 != -1){
+                entrada = listaCompleta.substring(index0, index1);
+                lista.append(entrada, null);
+                listaCompleta = listaCompleta.substring(index1+1, listaCompleta.length());
+                index1 = listaCompleta.indexOf("\n");
+            }
         }
+    }
+
+    public void commandAction(Command c, Item item) {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 }
