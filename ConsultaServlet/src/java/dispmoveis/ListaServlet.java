@@ -7,8 +7,6 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -21,7 +19,7 @@ import javax.servlet.http.HttpServletResponse;
 public class ListaServlet extends HttpServlet {
     protected static final String DB_URL = "jdbc:postgresql://localhost/livraria";
     protected static final String DB_USERNAME = "postgres";
-    protected static final String DB_PASSWORD = "12345";
+    protected static final String DB_PASSWORD = "1234";
 
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
     throws ServletException, IOException {
