@@ -9,23 +9,33 @@ import javax.microedition.lcdui.Command;
 import javax.microedition.lcdui.CommandListener;
 import javax.microedition.lcdui.Display;
 import javax.microedition.lcdui.Displayable;
+import javax.microedition.lcdui.Form;
 import javax.microedition.lcdui.Item;
 import javax.microedition.lcdui.ItemCommandListener;
 import javax.microedition.lcdui.List;
+import javax.microedition.lcdui.StringItem;
 import javax.microedition.midlet.*;
 
 /**
  * @author Caio
  */
-public class ConsultaLivros extends MIDlet implements CommandListener, ItemCommandListener{
+public class ConsultaLivros extends MIDlet implements CommandListener {
     private Display tela;
-    private List resultado;
+    private Form resultado;
     private List lista;
     private Command sair, listar, detalhar, voltar;
     private int livroId;
     private Connection conServlet;
     private String url;
     private StringBuffer sb;
+
+    private StringItem siTitulo;
+    private StringItem siAutor;
+    private StringItem siEditora;
+    private StringItem siAno;
+    private StringItem siDescricao;
+    private StringItem siPreco;
+    private StringItem siEstoque;
 
     public ConsultaLivros(){
         conServlet = new Connection();
@@ -36,9 +46,24 @@ public class ConsultaLivros extends MIDlet implements CommandListener, ItemComma
         detalhar = new Command("Detalhes", Command.OK, 0);
         voltar = new Command("Voltar", Command.BACK, 0);
 
-        resultado = new List("Detalhes do Livro", List.IMPLICIT);
+        resultado = new Form("Detalhes do Livro");
         resultado.setCommandListener(this);
         resultado.addCommand(voltar);
+
+        siTitulo = new StringItem("Título: ", "");
+        resultado.append(siTitulo);
+        siAutor = new StringItem("Autor: ", "");
+        resultado.append(siAutor);
+        siEditora = new StringItem("Editora: ", "");
+        resultado.append(siEditora);
+        siAno = new StringItem("Ano: ", "");
+        resultado.append(siAno);
+        siDescricao = new StringItem("Descrição: ", "");
+        resultado.append(siDescricao);
+        siPreco = new StringItem("Preço: ", "");
+        resultado.append(siPreco);
+        siEstoque = new StringItem("Estoque: ", "");
+        resultado.append(siEstoque);
 
         lista = new List("Livros", List.IMPLICIT);
         lista.setCommandListener(this);
@@ -92,28 +117,33 @@ public class ConsultaLivros extends MIDlet implements CommandListener, ItemComma
             sb = conServlet.connect(url);
 
             // Dispobilizar resultado
-            resultado.deleteAll();
-            resultado.append(sb.toString(), null);
-            tela.setCurrent(resultado);
-        }
-    }
+            String listaCompleta = sb.toString(); // lista auxiliar, sb permanece com todos os resultados
+            int index = listaCompleta.indexOf("\n");
+            while(index != -1) {
+                String linha = listaCompleta.substring(0, index);
 
-    public void commandAction(Command c, Item item) {
-        if(c == detalhar){
-            System.out.println("oi");
-            // Pegar o livro_id do item selecionado
-            //// fazer 'split' do primeiro ' ', fazer trim() e pegar o numero
-            String selecao = lista.getString(lista.getSelectedIndex());
-            selecao = selecao.substring(0, selecao.indexOf(" ")).trim();
-            livroId = Integer.parseInt(selecao);
+                int idx = linha.indexOf(" ");
+                String column = linha.substring(0, idx);
+                String content = linha.substring(idx+1, linha.length());
+                //livro_id, titulo, autor, editora, ano, descricao, preco, estoque, reserva
+                if(column.equals("titulo"))
+                    siTitulo.setText(content);
+                else if(column.equals("autor"))
+                    siAutor.setText(content);
+                else if(column.equals("editora"))
+                    siEditora.setText(content);
+                else if(column.equals("ano"))
+                    siAno.setText(content);
+                else if(column.equals("descricao"))
+                    siDescricao.setText(content);
+                else if(column.equals("preco"))
+                    siPreco.setText("R$ "+content);
+                else if(column.equals("estoque"))
+                    siEstoque.setText(content);
 
-            // Realizar consulta no Servlet
-            url = "http://localhost:8080/ConsultaServlet/DetalhesServlet?livro_id="+livroId;
-            sb = conServlet.connect(url);
-
-            // Dispobilizar resultado
-            resultado.deleteAll();
-            resultado.append(sb.toString(), null);
+                listaCompleta = listaCompleta.substring(index+1, listaCompleta.length());
+                index = listaCompleta.indexOf("\n");
+            }
             tela.setCurrent(resultado);
         }
     }

@@ -40,15 +40,15 @@ public class DetalhesServlet extends HttpServlet {
             // executa e percorre a consulta
             ResultSet rs = stm.executeQuery("SELECT livro_id, titulo, autor, editora, ano, descricao, preco, estoque, reserva FROM livros WHERE livro_id="+livroId);
             if(rs.next()) {
-                out.println("ID " + rs.getString(1));
-                out.println("Título " + rs.getString(2));
-                out.println("Autor " + rs.getString(3));
-                out.println("Editora " + rs.getString(4));
-                out.println("Ano " + rs.getString(5));
-                out.println("Descricao " + rs.getString(6));
-                out.println("Preco " + rs.getString(7));
-                out.println("Estoque " + rs.getString(8));
-                out.println("Reserva " + rs.getString(9));
+                out.println("livro_id " + rs.getString(1));
+                out.println("titulo " + rs.getString(2));
+                out.println("autor " + rs.getString(3));
+                out.println("editora " + rs.getString(4));
+                out.println("ano " + rs.getString(5));
+                out.println("descricao " + rs.getString(6));
+                out.println("preco " + rs.getString(7));
+                out.println("estoque " + rs.getString(8));
+                out.println("reserva " + rs.getString(9));
             }
 
             // fecha a conexao
