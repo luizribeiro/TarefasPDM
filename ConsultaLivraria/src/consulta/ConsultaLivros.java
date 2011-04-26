@@ -5,12 +5,10 @@
 
 package consulta;
 
-import javax.microedition.lcdui.ChoiceGroup;
 import javax.microedition.lcdui.Command;
 import javax.microedition.lcdui.CommandListener;
 import javax.microedition.lcdui.Display;
 import javax.microedition.lcdui.Displayable;
-import javax.microedition.lcdui.Form;
 import javax.microedition.lcdui.Item;
 import javax.microedition.lcdui.ItemCommandListener;
 import javax.microedition.lcdui.List;
@@ -22,9 +20,8 @@ import javax.microedition.midlet.*;
 public class ConsultaLivros extends MIDlet implements CommandListener, ItemCommandListener{
     private Display tela;
     private List resultado;
-    private ChoiceGroup lista;
+    private List lista;
     private Command sair, listar, detalhar, voltar;
-    private Form form;
     private int livroId;
     private Connection conServlet;
     private String url;
@@ -41,22 +38,30 @@ public class ConsultaLivros extends MIDlet implements CommandListener, ItemComma
 
         resultado = new List("Detalhes do Livro", List.IMPLICIT);
         resultado.setCommandListener(this);
-        resultado.addCommand(sair);
         resultado.addCommand(voltar);
 
-        lista = new ChoiceGroup("Livros", ChoiceGroup.EXCLUSIVE);
-        lista.setItemCommandListener(this);
+        lista = new List("Livros", List.IMPLICIT);
+        lista.setCommandListener(this);
         lista.addCommand(detalhar);
-
-        form = new Form("Livraria");
-        form.setCommandListener(this);
-        form.addCommand(sair);
-        form.addCommand(listar);
-
-        form.append(lista);
+        lista.addCommand(sair);
     }
     public void startApp() {
-        tela.setCurrent(form);
+        tela.setCurrent(lista);
+        // Preparar URL
+        url = "http://localhost:8080/ConsultaServlet/ListaServlet";
+
+        // Conecta, consulta e retorna resultados do servlet
+        sb = conServlet.connect(url);
+
+        // Lista a ser mostrada para o usuario
+        lista.deleteAll();
+        String listaCompleta = sb.toString(); // lista auxiliar, sb permanece com todos os resultados
+        int index = listaCompleta.indexOf("\n");
+        while(index != -1){
+            lista.append(listaCompleta.substring(0, index), null);
+            listaCompleta = listaCompleta.substring(index+1, listaCompleta.length());
+            index = listaCompleta.indexOf("\n");
+        }
     }
 
     public void pauseApp() {
@@ -69,31 +74,33 @@ public class ConsultaLivros extends MIDlet implements CommandListener, ItemComma
         if (c == sair) {
             this.notifyDestroyed();
         }
-        if (c == listar) {
-            // Preparar URL
-            url = "http://localhost:8080/ConsultaServlet/ListaServlet";
 
-            // Conecta, consulta e retorna resultados do servlet
-            sb = conServlet.connect(url);
-
-            // Lista a ser mostrada para o usuario
-            lista.deleteAll();
-            String listaCompleta = sb.toString(); // lista auxiliar, sb permanece com todos os resultados
-            int index = listaCompleta.indexOf("\n");
-            while(index != -1){
-                lista.append(listaCompleta.substring(0, index), null);
-                listaCompleta = listaCompleta.substring(index+1, listaCompleta.length());
-                index = listaCompleta.indexOf("\n");
-            }
-        }
         if(c == voltar){
             // Retorna da tela de resultado
-            tela.setCurrent(form);
+            tela.setCurrent(lista);
+        }
+
+        if(c == lista.SELECT_COMMAND || c == detalhar) {
+            // Pegar o livro_id do item selecionado
+            //// fazer 'split' do primeiro ' ', fazer trim() e pegar o numero
+            String selecao = lista.getString(lista.getSelectedIndex());
+            selecao = selecao.substring(0, selecao.indexOf(" ")).trim();
+            livroId = Integer.parseInt(selecao);
+
+            // Realizar consulta no Servlet
+            url = "http://localhost:8080/ConsultaServlet/DetalhesServlet?livro_id="+livroId;
+            sb = conServlet.connect(url);
+
+            // Dispobilizar resultado
+            resultado.deleteAll();
+            resultado.append(sb.toString(), null);
+            tela.setCurrent(resultado);
         }
     }
 
     public void commandAction(Command c, Item item) {
         if(c == detalhar){
+            System.out.println("oi");
             // Pegar o livro_id do item selecionado
             //// fazer 'split' do primeiro ' ', fazer trim() e pegar o numero
             String selecao = lista.getString(lista.getSelectedIndex());
