@@ -2,7 +2,6 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package consulta;
 
 import javax.microedition.lcdui.Command;
@@ -20,15 +19,15 @@ import javax.microedition.midlet.*;
  * @author Caio
  */
 public class ConsultaLivros extends MIDlet implements CommandListener {
+
     private Display tela;
     private Form resultado;
     private List lista;
-    private Command sair, listar, detalhar, voltar;
+    private Command sair, listar, detalhar, voltar, cancelar;
     private int livroId;
     private Connection conServlet;
     private String url;
     private StringBuffer sb;
-
     private StringItem siTitulo;
     private StringItem siAutor;
     private StringItem siEditora;
@@ -36,8 +35,10 @@ public class ConsultaLivros extends MIDlet implements CommandListener {
     private StringItem siDescricao;
     private StringItem siPreco;
     private StringItem siEstoque;
+    private Displayable previousScreen;
+    private Thread runningThread;
 
-    public ConsultaLivros(){
+    public ConsultaLivros() {
         conServlet = new Connection();
 
         tela = Display.getDisplay(this);
@@ -69,24 +70,43 @@ public class ConsultaLivros extends MIDlet implements CommandListener {
         lista.setCommandListener(this);
         lista.addCommand(detalhar);
         lista.addCommand(sair);
+
+        cancelar = new Command("Cancelar", Command.CANCEL, 0);
     }
+
     public void startApp() {
-        tela.setCurrent(lista);
-        // Preparar URL
-        url = "http://localhost:8080/ConsultaServlet/ListaServlet";
+        runningThread = new Thread() {
+            public void run() {
+                Form formCarregando = new Form("Carregando...");
+                formCarregando.append(new StringItem("Consultando Servlet de listagem de livros...", ""));
+                formCarregando.addCommand(ConsultaLivros.this.cancelar);
+                formCarregando.setCommandListener(ConsultaLivros.this);
+                tela.setCurrent(formCarregando);
+                ConsultaLivros.this.previousScreen = null;
 
-        // Conecta, consulta e retorna resultados do servlet
-        sb = conServlet.connect(url);
+                // Preparar URL
+                url = "http://localhost:8080/ConsultaServlet/ListaServlet";
 
-        // Lista a ser mostrada para o usuario
-        lista.deleteAll();
-        String listaCompleta = sb.toString(); // lista auxiliar, sb permanece com todos os resultados
-        int index = listaCompleta.indexOf("\n");
-        while(index != -1){
-            lista.append(listaCompleta.substring(0, index), null);
-            listaCompleta = listaCompleta.substring(index+1, listaCompleta.length());
-            index = listaCompleta.indexOf("\n");
-        }
+                // Conecta, consulta e retorna resultados do servlet
+                sb = conServlet.connect(url);
+
+                // Lista a ser mostrada para o usuario
+                lista.deleteAll();
+                String listaCompleta = sb.toString(); // lista auxiliar, sb permanece com todos os resultados
+                int index = listaCompleta.indexOf("\n");
+                while (index != -1) {
+                    lista.append(listaCompleta.substring(0, index), null);
+                    listaCompleta = listaCompleta.substring(index + 1, listaCompleta.length());
+                    index = listaCompleta.indexOf("\n");
+                }
+
+                tela.setCurrent(lista);
+
+                runningThread = null;
+            }
+        };
+
+        runningThread.start();
     }
 
     public void pauseApp() {
@@ -100,51 +120,75 @@ public class ConsultaLivros extends MIDlet implements CommandListener {
             this.notifyDestroyed();
         }
 
-        if(c == voltar){
+        if (c == cancelar) {
+            if (previousScreen == null) {
+                this.notifyDestroyed();
+            } else {
+                tela.setCurrent(previousScreen);
+                runningThread.interrupt(); // FIXME: provavelmente não é legal
+            }
+        }
+
+        if (c == voltar) {
             // Retorna da tela de resultado
             tela.setCurrent(lista);
         }
 
-        if(c == lista.SELECT_COMMAND || c == detalhar) {
-            // Pegar o livro_id do item selecionado
-            //// fazer 'split' do primeiro ' ', fazer trim() e pegar o numero
-            String selecao = lista.getString(lista.getSelectedIndex());
-            selecao = selecao.substring(0, selecao.indexOf(" ")).trim();
-            livroId = Integer.parseInt(selecao);
+        if (c == lista.SELECT_COMMAND || c == detalhar) {
+            runningThread = new Thread() {
+                public void run() {
+                    Form formCarregando = new Form("Carregando...");
+                    formCarregando.append(new StringItem("Consultando Servlet de detalhes do livro...", ""));
+                    formCarregando.addCommand(ConsultaLivros.this.cancelar);
+                    formCarregando.setCommandListener(ConsultaLivros.this);
+                    tela.setCurrent(formCarregando);
+                    ConsultaLivros.this.previousScreen = lista;
 
-            // Realizar consulta no Servlet
-            url = "http://localhost:8080/ConsultaServlet/DetalhesServlet?livro_id="+livroId;
-            sb = conServlet.connect(url);
+                    // Pegar o livro_id do item selecionado
+                    //// fazer 'split' do primeiro ' ', fazer trim() e pegar o numero
+                    String selecao = lista.getString(lista.getSelectedIndex());
+                    selecao = selecao.substring(0, selecao.indexOf(" ")).trim();
+                    livroId = Integer.parseInt(selecao);
 
-            // Dispobilizar resultado
-            String listaCompleta = sb.toString(); // lista auxiliar, sb permanece com todos os resultados
-            int index = listaCompleta.indexOf("\n");
-            while(index != -1) {
-                String linha = listaCompleta.substring(0, index);
+                    // Realizar consulta no Servlet
+                    url = "http://localhost:8080/ConsultaServlet/DetalhesServlet?livro_id=" + livroId;
+                    sb = conServlet.connect(url);
 
-                int idx = linha.indexOf(" ");
-                String column = linha.substring(0, idx);
-                String content = linha.substring(idx+1, linha.length());
-                //livro_id, titulo, autor, editora, ano, descricao, preco, estoque, reserva
-                if(column.equals("titulo"))
-                    siTitulo.setText(content);
-                else if(column.equals("autor"))
-                    siAutor.setText(content);
-                else if(column.equals("editora"))
-                    siEditora.setText(content);
-                else if(column.equals("ano"))
-                    siAno.setText(content);
-                else if(column.equals("descricao"))
-                    siDescricao.setText(content);
-                else if(column.equals("preco"))
-                    siPreco.setText("R$ "+content);
-                else if(column.equals("estoque"))
-                    siEstoque.setText(content);
+                    // Dispobilizar resultado
+                    String listaCompleta = sb.toString(); // lista auxiliar, sb permanece com todos os resultados
+                    int index = listaCompleta.indexOf("\n");
+                    while (index != -1) {
+                        String linha = listaCompleta.substring(0, index);
 
-                listaCompleta = listaCompleta.substring(index+1, listaCompleta.length());
-                index = listaCompleta.indexOf("\n");
-            }
-            tela.setCurrent(resultado);
+                        int idx = linha.indexOf(" ");
+                        String column = linha.substring(0, idx);
+                        String content = linha.substring(idx + 1, linha.length());
+                        //livro_id, titulo, autor, editora, ano, descricao, preco, estoque, reserva
+                        if (column.equals("titulo")) {
+                            siTitulo.setText(content);
+                        } else if (column.equals("autor")) {
+                            siAutor.setText(content);
+                        } else if (column.equals("editora")) {
+                            siEditora.setText(content);
+                        } else if (column.equals("ano")) {
+                            siAno.setText(content);
+                        } else if (column.equals("descricao")) {
+                            siDescricao.setText(content);
+                        } else if (column.equals("preco")) {
+                            siPreco.setText("R$ " + content);
+                        } else if (column.equals("estoque")) {
+                            siEstoque.setText(content);
+                        }
+
+                        listaCompleta = listaCompleta.substring(index + 1, listaCompleta.length());
+                        index = listaCompleta.indexOf("\n");
+                    }
+
+                    tela.setCurrent(resultado);
+                }
+            };
+
+            runningThread.start();
         }
     }
 }
