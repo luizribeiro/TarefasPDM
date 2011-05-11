@@ -47,16 +47,16 @@ public class TableCanvas extends Canvas {
 
         switch(gameAction) {
             case UP:
-                scrolly -= 5;
-                break;
-            case DOWN:
                 scrolly += 5;
                 break;
+            case DOWN:
+                scrolly -= 5;
+                break;
             case LEFT:
-                scrollx -= 5;
+                scrollx += 5;
                 break;
             case RIGHT:
-                scrollx += 5;
+                scrollx -= 5;
                 break;
         }
 
@@ -64,6 +64,11 @@ public class TableCanvas extends Canvas {
     }
 
     protected void paintHeader(Graphics g) {
+        int cont = 0;
+        for(int i = 0; i < numCols-1; cont+=getColumnWidth(i++, g));
+        if(scrollx > this.getWidth() - getColumnWidth(0, g)) scrollx = this.getWidth() - getColumnWidth(0, g);
+        else if(scrollx < -cont) scrollx = -cont;
+       
         int posx = scrollx, posy = 0;
         for(int i = 0; i < numCols; i++) {
             g.setColor(headerBackgroundColor);
@@ -83,6 +88,16 @@ public class TableCanvas extends Canvas {
     }
 
     protected void paintCells(Graphics g) {
+        // Limite de deslocamento das colunas
+        int cont = 0;
+        for(int i = 0; i < numCols-1; cont+=getColumnWidth(i++, g));
+        if(scrollx > this.getWidth() - getColumnWidth(0, g)) scrollx = this.getWidth() - getColumnWidth(0, g) + padding;
+        else if(scrollx < -cont) scrollx = -cont + padding;
+        
+        // Limite de deslocamento das linhas
+        if(scrolly > this.getHeight()-2*getRowHeight(g)) scrolly = this.getHeight()-2*getRowHeight(g) + padding;
+        else if(scrolly < -(numRows-1)*getRowHeight(g)) scrolly = (numRows-1)*getRowHeight(g) - padding;
+
         int posx = scrollx;
         int posy = scrolly + getHeaderHeight(g);
         for(int j = 0; j < numRows; j++) {

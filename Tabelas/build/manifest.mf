@@ -1,3 +1,4 @@
+MIDlet-2: TabelaMidlet,,example.TabelaMidlet
 MIDlet-1: TabelaMidlet,,tablemidlet.TableMidlet
 MIDlet-Vendor: Vendor
 MIDlet-Name: Tabelas

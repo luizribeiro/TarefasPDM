@@ -40,7 +40,7 @@ public class ScrollableTable{
     int foreColor = 0x000000;
     int borderWidth = 1;
     int borderColor = 0x000000;
-    int interline = 2;
+    int interline = 5;
     int padding = 2;
 
     public ScrollableTable(String[][] data, int width, int height) {
