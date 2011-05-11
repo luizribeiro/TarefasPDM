@@ -1,4 +1,4 @@
-MIDlet-1: TabelaMidlet, , tabelas.TabelaMidlet
+MIDlet-1: TabelaMidlet,,tablemidlet.TableMidlet
 MIDlet-Vendor: Vendor
 MIDlet-Name: Tabelas
 MIDlet-Version: 1.0

@@ -1,5 +1,5 @@
-MIDlet-1: TabelaMidlet, , tabelas.TabelaMidlet
-MIDlet-Jar-Size: 6136
+MIDlet-1: TabelaMidlet,,tablemidlet.TableMidlet
+MIDlet-Jar-Size: 9005
 MIDlet-Jar-URL: Tabelas.jar
 MIDlet-Name: Tabelas
 MIDlet-Vendor: Vendor
