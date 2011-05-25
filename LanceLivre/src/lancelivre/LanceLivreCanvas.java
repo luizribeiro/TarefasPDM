@@ -39,6 +39,8 @@ class LanceLivreCanvas extends GameCanvas implements Runnable {
     private Image imageBackground2;
     private Image imageHoop;
     private Image imageHoop2;
+    private Image imageNet;
+    private Image imageNet2;
     
     private long lastTick;
     private long currentTicks;
@@ -85,6 +87,8 @@ class LanceLivreCanvas extends GameCanvas implements Runnable {
             imageBackground2 = Image.createImage("/lancelivre/imgs/background2.png");
             imageHoop = Image.createImage("/lancelivre/imgs/hoop.png");
             imageHoop2 = Image.createImage("/lancelivre/imgs/hoop2.png");
+            imageNet = Image.createImage("/lancelivre/imgs/net.png");
+            imageNet2 = Image.createImage("/lancelivre/imgs/net2.png");
             digitos = new Sprite[2];
             digitos[0] = new Sprite(Image.createImage("/lancelivre/imgs/placar.png"), 13, 20);
             digitos[1] = new Sprite(Image.createImage("/lancelivre/imgs/placar.png"), 13, 20);
@@ -251,6 +255,12 @@ class LanceLivreCanvas extends GameCanvas implements Runnable {
         /*for(int i = 0; i < segLinhasTabela.length; i++)
             segLinhasTabela[i].draw(graphics, telaDeitada);
         segLinhaChao.draw(graphics, telaDeitada);*/
+        
+        // desenha a cesta
+        if(telaDeitada)
+            graphics.drawImage(imageNet, 346, 43, Graphics.TOP | Graphics.RIGHT);
+        else
+            graphics.drawImage(imageNet2, 43, 346, Graphics.BOTTOM | Graphics.LEFT);
 
         flushGraphics();
     }
