@@ -61,16 +61,31 @@ public class AngryShooterCanvas extends GameCanvas implements Runnable{
         this.repaint();
     }
     protected void pointerReleased(int x, int y){
+        if(x != ballX && y != ballY){
+            int j = diffX, k = diffY;
+            for(int i = 0; j != 0 || k != 0; i++){
+                if(j > 0) j += Math.max(0, j--);
+                else ballX -= Math.max(0, Math.abs(j++));
+                if(k > 0) k += Math.max(0, k--);
+                else ballY -= Math.max(0, Math.abs(k++));
+                try {
+                    Thread.sleep(25);
+                } catch (InterruptedException ex) {
+                }
+            }
+            ballX %= this.getWidth();
+            ballY %= this.getHeight();
+        }
         this.repaint();
     }
     int diffX, diffY;
     protected void pointerDragged(int x, int y){
-        if(x > ballX-10 && x < ballX + 10){
-            if(y > ballY-10 && y < ballY + 10){
+        //if(x > ballX-10 && x < ballX + 10){
+            //if(y > ballY-10 && y < ballY + 10){
                 diffX = ballX - x;
                 diffY = ballY - y;
-            }
-        }
+            //}
+        //}
         System.out.println("Dx = " + diffX + " Dy = " + diffY);
         this.repaint();
     }
