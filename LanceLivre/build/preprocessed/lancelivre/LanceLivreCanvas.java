@@ -67,6 +67,7 @@ class LanceLivreCanvas extends GameCanvas implements Runnable {
                                     new Vetor(87, 170), new Vetor(240, 170), new Vetor(238, 160)};
     private int posicaoBolaAtual = 0;
     private Sprite digitos[];
+    private Sprite bola;
 
     public LanceLivreCanvas() {
         super(true);
@@ -87,6 +88,7 @@ class LanceLivreCanvas extends GameCanvas implements Runnable {
             digitos = new Sprite[2];
             digitos[0] = new Sprite(Image.createImage("/lancelivre/imgs/placar.png"), 13, 20);
             digitos[1] = new Sprite(Image.createImage("/lancelivre/imgs/placar.png"), 13, 20);
+            bola = new Sprite(Image.createImage("/lancelivre/imgs/ball2.png"), 13, 13);
         } catch (IOException ex) {
         }
         
@@ -238,10 +240,13 @@ class LanceLivreCanvas extends GameCanvas implements Runnable {
         // desenha a bola
         graphics.setColor(255, 127, 39);
         if(telaDeitada)
-            graphics.fillArc((int)(posicaoBola.getX() - BALL_RADIUS), (int)(posicaoBola.getY() - BALL_RADIUS), (int)(2*BALL_RADIUS), (int)(2*BALL_RADIUS), 0, 360);
+            bola.setPosition((int)(posicaoBola.getX() - BALL_RADIUS), (int)(posicaoBola.getY() - BALL_RADIUS));
+            //graphics.fillArc((int)(posicaoBola.getX() - BALL_RADIUS), (int)(posicaoBola.getY() - BALL_RADIUS), (int)(2*BALL_RADIUS), (int)(2*BALL_RADIUS), 0, 360);
         else
-            graphics.fillArc((int)(posicaoBola.getY() - BALL_RADIUS), (int)(posicaoBola.getX() - BALL_RADIUS), (int)(2*BALL_RADIUS), (int)(2*BALL_RADIUS), 0, 360);
-        
+            bola.setPosition((int)(posicaoBola.getY() - BALL_RADIUS), (int)(posicaoBola.getX() - BALL_RADIUS));
+            //graphics.fillArc((int)(posicaoBola.getY() - BALL_RADIUS), (int)(posicaoBola.getX() - BALL_RADIUS), (int)(2*BALL_RADIUS), (int)(2*BALL_RADIUS), 0, 360);
+        bola.paint(graphics);
+        if(bolaLancada && currentTicks % 10 == 0) bola.nextFrame();
         // desenha as linhas da tabela e do chao
         /*for(int i = 0; i < segLinhasTabela.length; i++)
             segLinhasTabela[i].draw(graphics, telaDeitada);
